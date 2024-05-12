@@ -1,0 +1,8 @@
+[app]
+name = "ui-mobile"
+stylized-name = "Ui"
+domain = "rotcan"
+template-pack = "winit"
+
+[apple]
+development-team = "0"

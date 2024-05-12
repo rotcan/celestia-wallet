@@ -1,0 +1,19 @@
+[package]
+name = "rust_keyring"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+josekit = "0.8.6"
+keyring = "2.3.2"
+rpassword = "7.3.1"
+serde={workspace=true}
+serde_json = "1.0.115"
+tiny-bip39 = {workspace=true}
+tracing = {workspace=true}
+tracing-subscriber = {workspace=true}
+cosmrs = {workspace=true}
+thiserror={workspace=true}

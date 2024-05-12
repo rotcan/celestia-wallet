@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members=[
+    "rust-keyring", "query-client", "wallet", 
+    "ui",
+]
+
+[workspace.package]
+name = "celestia-wallet"
+version = "0.1.0"
+edition = "2021"
+license= "MIT"
+
+[workspace.dependencies]
+thiserror = "1.0.58"
+libp2p = "0.53.2"
+dirs = "5.0.1"
+serde ={version= "1.0.197", features = ["derive"]}
+toml = "0.8.12"
+tracing = "0.1.40"
+tracing-subscriber ={version="0.3.18",features = ["env-filter"]}
+tiny-bip39 = "1.0.0"
+cosmrs = {version="0.16.0",features=["bip32","getrandom"]}
