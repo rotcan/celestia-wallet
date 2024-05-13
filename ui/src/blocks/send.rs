@@ -57,7 +57,6 @@ impl SendBlock{
             if (response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))) || response.changed() {
                 if receiver_detail.amount.len() > 0 {
                     let val=helper::convert_amount(&receiver_detail.amount,receiver_detail.exponent).unwrap_or(0);
-                    println!("val={} {} {}",val,receiver_detail.amount,receiver_detail.exponent);
                     if val>0 {
                         //check gas
                         timer.start();

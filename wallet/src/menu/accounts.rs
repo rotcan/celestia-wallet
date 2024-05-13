@@ -40,7 +40,7 @@ impl Account{
     }
 
     pub fn value_match(&self,value: &str)->bool{
-        if self.value.as_str() == &format!("{}{}",value,EXTENSION) {
+        if &self.value.as_str().replace(EXTENSION,"") == value {
             return true;
         };
         false
@@ -117,7 +117,7 @@ impl Account{
             value: key.clone(),
             dir: credential.get_dir(),
             key: credential.get_key(),
-            title: key
+            title: key.replace(EXTENSION,""),
         })
     }
 

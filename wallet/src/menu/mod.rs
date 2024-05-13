@@ -22,7 +22,7 @@ pub mod tests{
         
         //let mut user=User::new(None);
         let mut user=User::default();
-        user.load_wallet_from_mnemoic("deal story donkey sort fault unusual nothing flock dice match review survey",None,password).unwrap();
+        user.load_wallet_from_mnemoic("paper mushroom betray smile demand dry liberty duck shy chronic nothing ensure carry reward fault remind blouse diamond regular cash stadium blanket elegant feature",None,password).unwrap();
         //create account
         // user.new(None).unwrap();
         // user.load_wallet(password).unwrap();

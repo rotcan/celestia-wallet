@@ -48,7 +48,7 @@ impl HomeLabels{
         }
     }
 
-    pub fn set_main_coin(&mut self,symbol: String, value: String, usd: String ){
+    pub fn set_main_coin(&mut self,symbol: String, value: String, usd: Option<String> ){
         self.main_coin.set_value(symbol,value,usd);
         self.main_coin.set_back_color(egui::Color32::DARK_GRAY);
     }

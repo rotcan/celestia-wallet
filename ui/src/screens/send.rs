@@ -40,7 +40,7 @@ pub struct SendDetail{
 impl SendDetail{
 
     pub fn default()->Self{
-        SendDetail::new("celestia1jr9zk6g9c3etc5t7snzftnrvaz8pmuu4sax75n".to_string(),"0".to_string(),"".to_string(),0)
+        SendDetail::new("".to_string(),"0".to_string(),"".to_string(),0)
     }
     pub fn new(to: String, amount: String, denom: String,exponent: u32)->Self{
         SendDetail {
@@ -123,7 +123,7 @@ impl Send{
         
         self.labels.coin_label.set_value(self.coin_denom.clone(),
         helper::get_rounded_value(self.balance,self.coin_exponent),
-        helper::get_rounded_value(self.balance,self.coin_exponent));
+        None);
     }
 
     pub fn get_action(&self)->SendAction{

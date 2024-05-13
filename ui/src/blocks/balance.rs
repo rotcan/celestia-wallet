@@ -14,7 +14,7 @@ impl BalanceBlock{
     }
 
     
-    pub fn set_fee_coin(&mut self,symbol: String, value: String, usd: String ){
+    pub fn set_fee_coin(&mut self,symbol: String, value: String, usd: Option<String> ){
         self.text.set_value(symbol,value,usd);
         self.text.set_back_color(egui::Color32::DARK_GRAY);
     }

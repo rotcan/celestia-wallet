@@ -224,7 +224,7 @@ impl BuyBlob{
                 egui_file::State::Selected => {
                     if let Some(file) = dialog.path() {
                         self.opened_file = Some(file.to_path_buf());
-                        println!("opened_file={:?}",self.opened_file);
+                        // println!("opened_file={:?}",self.opened_file);
                         self.opened_file.clone().map(|m| 
                             self.buy_blob_detail.file_path=m.into_os_string().into_string().unwrap()
                         );

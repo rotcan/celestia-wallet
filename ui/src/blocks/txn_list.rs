@@ -13,15 +13,21 @@ impl TxnListBlock{
             txns: vec![],
         }
     }
+    
     pub fn clear(&mut self){
         self.txns.clear();
     }
 
-    pub fn set_txns(&mut self, list: Vec<TxnListResponse>){
+    pub fn add_txns(&mut self, list: Vec<TxnListResponse>){
         list.iter().for_each(|txn| {
             let txn_text: TxnText = txn.into();
             self.txns.push(txn_text);
         });
+    }
+
+    pub fn set_txns(&mut self, list: Vec<TxnListResponse>){
+        self.clear();
+        self.add_txns(list);
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, width: f32, height : f32, state: &mut AppState, view: &mut AppView){

@@ -73,6 +73,10 @@ pub enum AppState{
     VerifyMnemonic,
     MatchMnemonic,
     ImportMnemonic,
+
+    TxnListClick,
+    SettingsClick,
+    HomeClick,
     ShowError(String),
 
 }
@@ -199,6 +203,7 @@ impl App{
             buy_blob_promise: buy_blob::BuyBlobPromise::new(),
             balance_promise: balance::BalancePromise::new(),
             txn_list_promise: TxnListPromise::new(),
+
             tx_gas: None,
             password: "".to_string(),
             blocks: AppBlocks::new(),
@@ -268,7 +273,6 @@ impl App{
     }
 
     fn update_current_account(&mut self){
-        
         //balances
         self.balance_promise.init(&self.user,&self.account_select_detail.name);
         //txns
@@ -285,15 +289,14 @@ impl App{
         if self.app_state == AppState::SendClick{
             self.app_state= AppState::None;
             // self.send.update_action(crate::screens::send::SendAction::SendClickWait);
-            println!("check send");
             //if self.active_account_name.is_some() {
-                self.send_promise.init_tx(&self.user,
-                    //&self.active_account_name.clone().unwrap(),
-                    &self.account_select_detail.name,
-                    self.send_detail.clone(),
-                    self.tx_gas);
+            self.send_promise.init_tx(&self.user,
+                //&self.active_account_name.clone().unwrap(),
+                &self.account_select_detail.name,
+                self.send_detail.clone(),
+                self.tx_gas);
             //};
-         
+            self.blocks.message.update_tx_response(TxState::Pending,"Pending!".to_owned());
         }
     }
 
@@ -331,6 +334,9 @@ impl App{
     fn check_add_account(&mut self){
         if self.app_state == AppState::AddAccountPubkey{
             self.app_state=AppState::None;
+            if self.view != AppView::AddAccountScreen{
+                self.blocks.message.tx_response.clear_state();
+            };
             match self.user.get_new_account_address(){
                 Ok((name,address))=>{
                     //println!("update account {} {} ",address,name);
@@ -354,9 +360,40 @@ impl App{
             self.blocks.account_list.add_accounts(
                 vec![AccountData::new( self.add_account_detail.name.clone().unwrap() ,
                 self.add_account_detail.address.clone().unwrap(), self.add_account_detail.title.clone().unwrap(),)]);
+            
             //set current account
+            self.account_select_detail.update_add_account(&self.add_account_detail);
+            
             self.update_current_account();
+            if self.view != AppView::AddAccountScreen{
+                self.blocks.message.tx_response.clear_state();
+            };
             self.view=AppView::Home;
+        }
+
+        if self.app_state == AppState::SettingsClick{
+            self.app_state=AppState::None;
+
+            if self.view!=AppView::Home {
+                self.blocks.message.tx_response.clear_state();
+            };
+            self.view=AppView::Home;
+        }
+
+        if self.app_state == AppState::HomeClick{
+            self.app_state=AppState::None;
+            if self.view!=AppView::Home {
+                self.blocks.message.tx_response.clear_state();
+            };
+            self.view=AppView::Home;
+        }
+
+        if self.app_state == AppState::TxnListClick{
+            self.app_state=AppState::None;
+            if self.view!=AppView::TxnList {
+                self.blocks.message.tx_response.clear_state();
+            };
+            self.view=AppView::TxnList;
         }
     }
 
@@ -422,7 +459,7 @@ impl App{
         if self.app_state == AppState::BuyBlobClick {
             //self.blob.update_action(crate::screens::blob::BuyBlobAction::BuyBlobClickWait);
             self.app_state= AppState::None;
-            println!("check buy blob");
+            // println!("check buy blob");
          
             //if self.active_account_name.is_some() {
                 if self.buy_blob_detail.namespace.len()>0 
@@ -637,16 +674,15 @@ impl App{
         self.send_promise.check_gas_result();
         self.send_promise.consume_tx_result().map(|m| {
             //self.send.update_tx_response(Some(m.to_owned()),None);
-            self.blocks.message.update_tx_response(TxState::Success,m);
+            self.blocks.message.update_tx_response(TxState::Success,"Sucecss!".to_owned());
             //get updated after 5 seconds
             std::thread::sleep(tokio::time::Duration::from_millis(5000));
-            //self.balance_promise.init(&self.user,self.home.get_active_account_name().clone());
-            //if self.active_account_name.is_some() {
-                self.balance_promise.init(&self.user,
-                    //&self.active_account_name.clone().unwrap()
-                    &self.account_select_detail.name,
-                );
-            //}
+            
+            self.balance_promise.init(&self.user,
+                //&self.active_account_name.clone().unwrap()
+                &self.account_select_detail.name,
+            );
+            
         });
         self.send_promise.consume_gas_result().map(|m| {
             self.tx_gas=Some(m);
@@ -661,12 +697,11 @@ impl App{
 
             std::thread::sleep(tokio::time::Duration::from_millis(5000));
             //self.balance_promise.init(&self.user,self.home.get_active_account_name().clone());
-            //if self.active_account_name.is_some() {
-                self.balance_promise.init(&self.user,
+            self.balance_promise.init(&self.user,
                     //&self.active_account_name.clone().unwrap()
-                    &self.account_select_detail.name,
-                );
-            //}
+                &self.account_select_detail.name,
+            );
+            
         });
 
 
@@ -675,7 +710,7 @@ impl App{
         self.buy_blob_promise.check_gas_result();
         self.buy_blob_promise.consume_tx_result().map(|m| {
             //self.blob.update_tx_response(Some(m.to_owned()),None);
-            self.blocks.message.update_tx_response(TxState::Success,m);
+            self.blocks.message.update_tx_response(TxState::Success,"Success!".to_owned());
             //get updated after 5 seconds
             std::thread::sleep(tokio::time::Duration::from_millis(5000));
             //self.balance_promise.init(&self.user,self.home.get_active_account_name().clone());
@@ -719,20 +754,26 @@ impl App{
             fee_coin.as_ref().map(|fee_coin| {
                 self.blocks.balance.set_fee_coin(fee_coin.symbol.clone(), 
                     helper::get_rounded_value(fee_coin.balance,fee_coin.exponent),
-                    helper::get_rounded_value(fee_coin.balance,fee_coin.exponent)
+                    None
                 );
             });
             if fee_coin.is_none() {
                 //Clear
                 self.blocks.balance.set_fee_coin(DEFAULT_SYMBOL.to_owned(), 
                     helper::get_rounded_value(0,DEFAULT_EXPONENT),
-                    helper::get_rounded_value(0,DEFAULT_EXPONENT)
+                    None
                 );
             }
             if self.fee_coin.is_none() {
                 fee_coin.as_ref().map(|fee_coin| self.blocks.gas.update_fee_coin(fee_coin));
                 self.fee_coin=fee_coin;
             }
+            //Get txns
+            std::thread::sleep(tokio::time::Duration::from_millis(2000));
+            self.txn_list_promise.init(&self.user,
+                //&self.active_account_name.clone().unwrap()
+                &self.account_select_detail.name,
+            );
             
         });
         self.balance_promise.consume_failure().map(|_|{});

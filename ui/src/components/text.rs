@@ -18,7 +18,9 @@ where F: FnOnce(String) -> String + Clone{
     clicked: bool,
     width: Option<f32>,
     is_hyperlink: bool,
+    hyperlink_text: Option<String>,
     hyperlink_fn: Option<F> 
+    
 }
 
 impl<F> fmt::Debug for WalletText<F> 
@@ -32,7 +34,8 @@ impl<F> WalletText<F>
 where F: FnOnce(String) -> String + Clone{
     pub fn new(text: Vec<String>, font_size: Vec<f32>,
         text_color: Vec<egui::Color32>, height: Option<f32>,alignment: egui::Align,
-        is_vertical:bool,is_dim_pct: bool, hyperlink_fn : F)->Self{
+        is_vertical:bool,is_dim_pct: bool,hyperlink_text: Option<String>,
+         hyperlink_fn : F)->Self{
          
         WalletText{
             text,
@@ -46,6 +49,7 @@ where F: FnOnce(String) -> String + Clone{
             clicked: false,
             width: None,
             is_hyperlink: false,
+            hyperlink_text,
             hyperlink_fn: Some(hyperlink_fn),
         }
     }
@@ -141,7 +145,7 @@ where F: FnOnce(String) -> String + Clone{
                             egui::widget_text::RichText::new(value.as_str())
                         .font(self.font_id.get(i).unwrap().clone())
                         .color(self.text_color.get(i).unwrap().clone()),
-                        (func.clone())(value.clone()),
+                        (func.clone())(self.hyperlink_text.clone().unwrap()),
                         );
                         if self.width.is_some() && self.height.is_some() {
                             ui.add_sized(
@@ -178,7 +182,7 @@ pub type DefaultHyperlinkFunction = fn(String)->String;
 pub struct CoinText{
     pub symbol: String,
     pub value: String,
-    pub usd: String,
+    pub usd: Option<String>,
     pub label: WalletText<DefaultHyperlinkFunction>,
 }
 
@@ -187,21 +191,30 @@ impl CoinText{
         CoinText{
             symbol: "".to_string(),
             value: "0.0".to_string(),
-            usd: "0.0".to_string(),
+            usd: None,
             label: WalletText::new(
                 vec![], font_sizes,
             colors,
             margin,egui::Align::Center,true,true,
+            None,
             move |s| format!("{}",s)
             )
         }
     }
 
-    pub fn set_value(&mut self, symbol: String, value: String, usd: String){
+    pub fn set_value(&mut self, symbol: String, value: String, usd: Option<String>){
         self.symbol=symbol;
         self.value=value;
+        
+        let texts= match &usd {
+            Some(val)=>vec![
+                format!("{} {}",self.value,self.symbol),
+                format!("${}",val)],
+            None=>vec![
+                format!("{} {}",self.value,self.symbol),],
+        };
+        self.label.set_texts(texts);
         self.usd=usd;
-        self.label.set_texts(vec![format!("{} {}",self.value,self.symbol),format!("${}",self.usd)]);
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, screen_width: f32, screen_height: f32){
@@ -234,6 +247,7 @@ impl AddressText{
                 vec![], font_sizes,
             colors,
             margin,egui::Align::Center,false,true,
+            None,
             move |s| format!("{}",s)
             )
         }
@@ -245,7 +259,8 @@ impl AddressText{
         self.title=title.clone();
         self.name=name.clone();
         if is_truncated == true {
-            self.label.set_texts(vec![helper::get_wrapped_text(title,4),helper::get_wrapped_text(address,4)]);
+            self.label.set_texts(vec![helper::get_wrapped_text(title,super::ADDRESS_WRAP_CHARS),
+            helper::get_wrapped_text(address,super::ADDRESS_WRAP_CHARS)]);
         }else{
             self.label.set_texts(vec![title,address]);
         }
@@ -284,6 +299,7 @@ impl MsgText{
                 vec![], vec![font_size],
             vec![color],
             margin,egui::Align::Min,true,true,
+            None,
             move |s| format!("{}",s)
             )
         }
@@ -346,12 +362,14 @@ impl From<&TxnListResponse> for TxnText {
                 vec![day,time], vec![super::TX_LIST_HASH_FONT_SIZE,super::TX_LIST_HASH_FONT_SIZE],
                 vec![super::TX_LIST_HASH_COLOR,super::TX_LIST_HASH_COLOR],
                 None,egui::Align::Min,false,true,
+                None,
                 move |s| format!("{}",s)
             ),
             label: WalletText::new(
                 vec![ hash.clone()], vec![super::TX_LIST_HASH_FONT_SIZE],
                 vec![super::TX_LIST_HASH_COLOR],
                 Some(0.02),egui::Align::Min,false,true,
+                Some(a.hash.clone()),
                 move |s| format!("https://arabica.celenium.io/tx/{}?tab=messages",s)
             ),
         };

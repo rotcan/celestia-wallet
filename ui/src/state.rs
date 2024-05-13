@@ -17,7 +17,7 @@ pub struct SendDetail{
 impl SendDetail{
 
     pub fn default()->Self{
-        SendDetail::new("celestia1jr9zk6g9c3etc5t7snzftnrvaz8pmuu4sax75n".to_string(),"0".to_string(),"".to_string(),0)
+        SendDetail::new("".to_string(),"0".to_string(),"".to_string(),0)
     }
     pub fn new(to: String, amount: String, denom: String,exponent: u32)->Self{
         SendDetail {
@@ -88,6 +88,12 @@ impl AccountData{
         self.name=data.name;
         self.address=data.address;
         self.title=data.title;
+    }
+
+    pub fn update_add_account(&mut self, data: &AddAccountDetail){
+        data.name.as_ref().map(|name| self.name=name.clone());
+        data.title.as_ref().map(|title| self.title=title.clone());
+        data.address.as_ref().map(|address| self.address=address.clone());
     }
 }
 

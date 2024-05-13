@@ -5,3 +5,4 @@ pub mod timer;
 
 pub const TX_LIST_HASH_FONT_SIZE: f32=12.0;
 pub const TX_LIST_HASH_COLOR: egui::Color32 = egui::Color32::WHITE;
+pub const ADDRESS_WRAP_CHARS: u32 = 6;

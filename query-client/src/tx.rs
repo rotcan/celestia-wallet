@@ -339,7 +339,7 @@ pub async fn send(from: &mut CosmosSigner, to: &str, coin: Vec<Coin>,
         }else{
             None
         };
-        println!("_response= {:?} ",response);
+        //println!("_response= {:?} ",response);
 
         response.map_or_else(
             || Err(QueryError::TxError("Missing".to_string())),

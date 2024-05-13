@@ -33,6 +33,7 @@ impl GasText{
                 vec![], vec![GAS_LABEL_FONT_SIZE,GAS_TEXT_FONT_SIZE],
             vec![GAS_LABEL_COLOR,GAS_TEXT_COLOR],
             None,egui::Align::Min,false,true,
+            None,
             move |s| format!("{}",s)
             ),
             frame_color: GAS_FRAME_COLOR,

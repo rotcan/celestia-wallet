@@ -1,6 +1,7 @@
 use crate::app::{AppState,AppView};
 use crate::components::text::AddressText;
 use crate::state::{AccountData,DeleteAccountDetail};
+use cel_wallet::EXTENSION;
 use crate::helper;
 
 pub struct AccountListBlock{
@@ -55,7 +56,7 @@ impl AccountListBlock{
                     let values=account.get_value();
                         
                     if account.get_is_clicked(){
-                        account_data.update(values.0.clone(),values.1,values.2);
+                        account_data.update(values.0.clone().replace(EXTENSION,""),values.1,values.2);
                         *view=AppView::Home;
                         *state=AppState::ActiveAccountUpdate;
                     }

@@ -23,25 +23,28 @@ impl BottomPanelBlock{
         .show(ui, |ui| {
             let user = egui::Button::new(egui::RichText::new("🐶".to_string()).font(helper::get_font_id(super::CHAR_BUTTON_FONTSIZE)));
             if ui.add_sized([col_width,col_height],user).clicked() {
-                *view= AppView::Home;
+                //*view= AppView::Home;
+                *state= AppState::HomeClick;
             };
             //Add Account
             let add_account = egui::Button::new(egui::RichText::new("➕".to_string()).font(helper::get_font_id(super::CHAR_BUTTON_FONTSIZE)));
             if ui.add_sized([col_width,col_height],add_account).clicked() {
-                *view= AppView::AddAccountScreen;
+                //*view= AppView::AddAccountScreen;
                 *state= AppState::AddAccountPubkey;
             };
             
             //Settings
             let settings = egui::Button::new(egui::RichText::new("⚙".to_string()).font(helper::get_font_id(super::CHAR_BUTTON_FONTSIZE)));
             if ui.add_sized([col_width,col_height],settings).clicked() {
-                *view= AppView::Home;
+                //*view= AppView::Home;
+                *state= AppState::SettingsClick;
             };
             
             //List
             let list = egui::Button::new(egui::RichText::new("📖".to_string()).font(helper::get_font_id(super::CHAR_BUTTON_FONTSIZE)));
             if ui.add_sized([col_width,col_height],list).clicked() {
-                *view= AppView::TxnList;
+               // *view= AppView::TxnList;
+                *state= AppState::TxnListClick;
             };
             ui.end_row();
         });

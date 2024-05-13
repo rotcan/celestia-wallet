@@ -32,11 +32,8 @@ impl TopPanelBlock{
             ui.add_space(super::TOP_PANEL_MARGIN_ADDRESS*width);
             self.address.ui(ui,width,height);
             if self.address.get_is_clicked(){
-                #[cfg(not(target_os = "android"))]
-                {
-                    ctx.output_mut(|o| o.copied_text = self.address.title.clone());
-                    println!("copied address");
-                }
+                ctx.output_mut(|o| o.copied_text = self.address.address.clone());
+                //println!("copied address");
             };
             if view != &AppView::Home {
                 ui.add_space(super::TOP_PANEL_MARGIN_BACK*width);
