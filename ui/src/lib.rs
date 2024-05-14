@@ -34,7 +34,7 @@ fn create_window<T>(
         .with_decorations(true)
         .with_resizable(true)
         .with_transparent(false)
-        .with_title("R wallet")
+        .with_title("Oxidium")
         .with_inner_size(winit::dpi::PhysicalSize {
             width: INITIAL_WIDTH,
             height: INITIAL_HEIGHT,
