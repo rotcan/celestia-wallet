@@ -7,6 +7,7 @@ pub struct NewWalletBlock{
     copy: WalletButton ,
     create: WalletButton ,
     import: WalletButton ,
+    back: WalletButton ,
 }
 
 impl NewWalletBlock{
@@ -16,6 +17,7 @@ impl NewWalletBlock{
             copy: super::get_splash_button("Copy"),
             create: super::get_splash_button("Create New"),
             import: super::get_splash_button("Import Existing"),
+            back:  super::get_splash_button("Back"),
         }
     }
 
@@ -42,6 +44,13 @@ impl NewWalletBlock{
             if self.import.get_is_clicked() {
                 mnemonic_detail.clear();            
                 *view=AppView::SplashImport;
+            }
+
+            ui.add_space(0.025*height);
+            self.back.ui(ui,width,height);
+            if self.back.get_is_clicked() {
+                mnemonic_detail.clear();            
+                *view=AppView::SplashExisting;
             }
         }
         else if view == &AppView::SplashNewP2{
@@ -86,6 +95,13 @@ impl NewWalletBlock{
             self.next.ui(ui,width,height);
             if self.next.get_is_clicked() {
                 *state=AppState::VerifyMnemonic;
+            }
+
+            ui.add_space(0.025*height);
+            self.back.ui(ui,width,height);
+            if self.back.get_is_clicked() {
+                mnemonic_detail.clear();            
+                *state=AppState::SplashReset;
             }
 
         }
@@ -144,6 +160,8 @@ impl NewWalletBlock{
                     *state=AppState::ShowError(PASSWORD_ERROR.to_owned());
                 };
             }
+
+            
         }else if view == &AppView::SplashImport{  
             ui.label(helper::get_label("Import existing mnemonic",12.0,false));
             ui.add_space(0.025*height);
@@ -205,6 +223,12 @@ impl NewWalletBlock{
                 } else if helper::password_validation(password) == false {
                     *state=AppState::ShowError(PASSWORD_ERROR.to_owned());
                 };
+            }
+
+            ui.add_space(0.025*height);
+            self.back.ui(ui,width,height);
+            if self.back.get_is_clicked() {
+                *state=AppState::SplashReset;
             }
 
         } 

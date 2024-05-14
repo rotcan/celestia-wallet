@@ -18,6 +18,7 @@ use prost::Message;
 use serde::{Serialize,Deserialize};
 use chrono::{DateTime,Utc};
 
+#[derive(Clone)]
 pub struct CosmosTx{
     tx: BodyBuilder,
 }
@@ -178,7 +179,7 @@ impl CosmosSigner{
         Ok(())
     }
 
-    pub async fn calculate_gas(&mut self,tx_body: &Body,)->Result<cosmrs::Gas,QueryError>{
+    pub async fn calculate_gas(&mut self,tx_body: &Body)->Result<cosmrs::Gas,QueryError>{
 
         self.update_signer().await?;
         //let tx_body=cosmos_tx.finish();
@@ -201,14 +202,17 @@ impl CosmosSigner{
         )?;
 
         let tx_raw = sign_doc.sign(&self.private_key)?;
-        //simulate
+
         let tx = self.simulate(tx_raw.to_bytes()?).await?;
+
+        let gas_info = tx.gas_info;
+        //simulate
         
-        if tx.gas_info.is_none() {
+        if gas_info.is_none() {
             return Err(QueryError::SimulationFailed);
         }
 
-        let mut gas_info = tx.gas_info.unwrap_or_default().gas_used;
+        let mut gas_info = gas_info.unwrap_or_default().gas_used;
         gas_info.mul_assign(100u64 + u64::from(10u64));
         gas_info.div_assign(100);
 
@@ -267,11 +271,7 @@ impl CosmosSigner{
 
 
     pub async fn poll_for_tx(&self, tx: TxResponse) -> Result<TxResponse, QueryError> {
-        // let hash = match tx {
-        //     CosmosTxResponse::Sync(tx) => tx.hash,
-        //     CosmosTxResponse::Async(tx) => tx.hash,
-        //     CosmosTxResponse::Commit(tx) => tx.hash,
-        // };
+         
         let hash=tx.txhash;
         for _ in 0..60 {
             let tx = self.get_tx(hash.as_str()).await;
@@ -353,7 +353,7 @@ pub async fn send(from: &mut CosmosSigner, to: &str, coin: Vec<Coin>,
 }
 
 pub async fn estimate_gas_blob_tx(from: &mut CosmosSigner, msg:  crate::blob::MsgPayForBlobs,
-    _blobs: Vec<celestia_types::Blob>,
+    blobs: Vec<celestia_types::Blob>,
     memo: Option<&str>,)->Result<cosmrs::Gas,QueryError>{
         let msg: Any=msg.to_any()?;
         let mut payload = CosmosTx::build()
@@ -361,8 +361,27 @@ pub async fn estimate_gas_blob_tx(from: &mut CosmosSigner, msg:  crate::blob::Ms
         if let Some(memo) = memo {
             payload = payload.memo(memo);
         }
-
-        from.calculate_gas(&payload.finish()).await
+        let init_gas=from.calculate_gas(&payload.finish()).await?;
+        Ok(init_gas)
+        // println!("init_gas={:?}",init_gas);
+        //println!("blobs={:?}",blobs);
+        //from.calculate_gas(&payload.finish(),Some(blobs)).await
+        // let tx=from.sign_blob_and_broadcast(payload.clone(),blobs,Some(100),BroadcastMode::Sync).await.unwrap();
+        
+        // Ok(match tx{
+        //     Some(response)=>{
+        //         let log=response.raw_log;
+        //         let values=log.split("gasUsed:").collect::<Vec<&str>>();
+        //         let value=values.get(1).unwrap().split(":").collect::<Vec<&str>>();
+        //         let int_value: u32=value.get(0).unwrap().to_owned().trim().parse::<u32>().unwrap();
+        //         //println!("int_value {:?}",int_value);
+        //         int_value.into()
+        //     },
+        //     None=>{
+        //         from.calculate_gas(&payload.finish()).await?
+        //     }
+        // })
+       
     }
 
 
@@ -381,13 +400,25 @@ pub async fn buy_blob_tx(from: &mut CosmosSigner, msg:  crate::blob::MsgPayForBl
 
         let tx=from.sign_blob_and_broadcast(payload,blobs,gas,BroadcastMode::Sync).await.unwrap();
         println!("blob tx={:?}",tx);
-        let _response=if let Some(ref tx) = tx {
-            Some(from.poll_for_tx(tx.clone()).await.unwrap())
+        let response=if let Some(ref tx) = tx {
+            if tx.code> 1 {
+                //Error
+                Some(tx.clone())
+            }else{
+                Some(from.poll_for_tx(tx.clone()).await.unwrap())
+            }
         }else{
             None
         };
 
-        Ok(tx.map(|m| m.txhash))
+        response.map_or_else(
+        || Err(QueryError::TxError("Missing".to_string())),
+        |m| {
+        if m.code>1 {
+            return Err(QueryError::TxError(m.raw_log));
+        }
+        Ok(Some(m.txhash))}
+        )
     
 }
  

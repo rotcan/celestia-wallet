@@ -29,7 +29,7 @@ impl HomeButtonsBlock{
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, width: f32, height: f32,transfer_coin: &CoinMetadata,
-        send_detail: &mut SendDetail, _state: &mut AppState, view: &mut AppView){
+        send_detail: &mut SendDetail, state: &mut AppState, view: &mut AppView){
         if self.visible == true {
             ui.horizontal(|ui|{
                 ui.add_space(width*0.18);
@@ -37,12 +37,14 @@ impl HomeButtonsBlock{
                 if self.send_button.get_is_clicked() {
                     send_detail.set_value(transfer_coin);
                     //Set main coin for now
-                    *view=AppView::SendScreen;
+                    //*view=AppView::SendScreen;
+                    *state= AppState::SendScreenClick;
                     
                 }
                 self.buy_blob_button.ui(ui,width,height);
                 if self.buy_blob_button.get_is_clicked() {
-                    *view=AppView::BuyBlobScreen;
+                    //*view=AppView::BuyBlobScreen;
+                    *state= AppState::BuyBlobScreenClick;
                 }
             });
         };

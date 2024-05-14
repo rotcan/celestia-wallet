@@ -9,16 +9,6 @@ const GAS_TEXT_COLOR: egui::Color32 = egui::Color32::WHITE;
 const GAS_FRAME_COLOR: egui::Color32 = egui::Color32::TRANSPARENT;
 const FRAME_SELECTED_COLOR: egui::Color32 = egui::Color32::DARK_GRAY;
 
-pub struct GasBlock{
-    gas: Option<cel_wallet::CosmosGas>,
-    //
-    label_font: egui::FontId,
-    low: GasText,
-    mid: GasText,
-    high: GasText,
-    exponent: u32,
-}
-
 struct GasText{
     pub frame_color: egui::Color32,
     pub text: WalletText<DefaultHyperlinkFunction>,
@@ -37,10 +27,10 @@ impl GasText{
             move |s| format!("{}",s)
             ),
             frame_color: GAS_FRAME_COLOR,
-            value: 0,
+            value: 0
         }
     }
-
+ 
     pub fn ui(&mut self, ui: &mut egui::Ui,width: f32, height: f32){
         let f_width=width*0.2;
         let f_height=height*0.2;
@@ -50,6 +40,7 @@ impl GasText{
                 self.text.ui(ui,width,height);
             });
         });
+        
     }
 
     pub fn set_texts(&mut self,val: Vec<String>){
@@ -68,6 +59,18 @@ impl GasText{
 
 }
 
+
+pub struct GasBlock{
+    gas: Option<cel_wallet::CosmosGas>,
+    //
+    label_font: egui::FontId,
+    low: GasText,
+    mid: GasText,
+    high: GasText,
+    exponent: u32,
+    pub is_hidden: bool,
+}
+
 impl GasBlock{
 
     pub fn new()->Self{
@@ -78,6 +81,7 @@ impl GasBlock{
             mid: GasText::new(),
             high: GasText::new(),
             exponent: 0,
+            is_hidden:true,
         }
     }
 
@@ -118,8 +122,13 @@ impl GasBlock{
         self.mid.frame_color=GAS_FRAME_COLOR;
         self.high.frame_color=GAS_FRAME_COLOR;
     }
+ 
+    pub fn hide(&mut self){
+        self.gas=None;
+    }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, width: f32, height: f32,gas_value: &mut Option<cel_wallet::CosmosGas>){
+
         if self.gas.is_some() { 
             let margin_height=0.025*height;
             // let margin_width=0.02*width;

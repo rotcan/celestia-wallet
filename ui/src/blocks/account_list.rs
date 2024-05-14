@@ -61,7 +61,7 @@ impl AccountListBlock{
                         *state=AppState::ActiveAccountUpdate;
                     }
                     //Do not delete root account
-                    if values.0 != "account-0".to_string() {
+                    if values.0 != format!("account-0{}",EXTENSION) {
                         let delete = egui::Button::new(egui::RichText::new("❎".to_string())
                             .font(helper::get_font_id(super::CHAR_BUTTON_FONTSIZE)));
                         if ui.add(delete).clicked() {

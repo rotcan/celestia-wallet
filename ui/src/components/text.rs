@@ -193,13 +193,17 @@ impl CoinText{
             value: "0.0".to_string(),
             usd: None,
             label: WalletText::new(
-                vec![], font_sizes,
+                vec!["Loading...".to_owned()], font_sizes,
             colors,
             margin,egui::Align::Center,true,true,
             None,
             move |s| format!("{}",s)
             )
         }
+    }
+
+    pub fn set_loading(&mut self){
+        self.label.set_texts(vec!["Loading...".to_owned()]);
     }
 
     pub fn set_value(&mut self, symbol: String, value: String, usd: Option<String>){

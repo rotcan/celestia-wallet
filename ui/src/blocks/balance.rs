@@ -13,6 +13,9 @@ impl BalanceBlock{
         }
     }
 
+    pub fn set_loading(&mut self){
+        self.text.set_loading();
+    }
     
     pub fn set_fee_coin(&mut self,symbol: String, value: String, usd: Option<String> ){
         self.text.set_value(symbol,value,usd);

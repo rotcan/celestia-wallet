@@ -50,18 +50,15 @@ pub enum AppState{
     SplashPasswordCheck,
     SplashPasswordReset,
 
-    //Main Screen
-    SendView,
-    BuyBlobView,
-
+    SendScreenClick,
+    BuyBlobScreenClick,
+    
     //SendView
     SendClick,
-    SendClickWait,
-
+    
     //Buy Blob
     BuyBlobClick,
-    BuyBlobWait,
-
+    
     //
     ActiveAccountUpdate,
     AddAccountPubkey,
@@ -275,6 +272,7 @@ impl App{
     fn update_current_account(&mut self){
         //balances
         self.balance_promise.init(&self.user,&self.account_select_detail.name);
+        self.blocks.balance.set_loading();
         //txns
         self.txn_list_promise.init(&self.user,&self.account_select_detail.name);
 
@@ -335,6 +333,7 @@ impl App{
         if self.app_state == AppState::AddAccountPubkey{
             self.app_state=AppState::None;
             if self.view != AppView::AddAccountScreen{
+                self.view = AppView::AddAccountScreen;
                 self.blocks.message.tx_response.clear_state();
             };
             match self.user.get_new_account_address(){
@@ -343,9 +342,9 @@ impl App{
                     self.add_account_detail.address=Some(address.clone());
                     self.add_account_detail.name=Some(name.clone());
                     self.add_account_detail.title=Some(name.clone());
-                    //Set this as current account
-                    self.account_select_detail.update_self(self.add_account_detail.clone().into());
-                    self.update_current_account();
+                    // //Set this as current account
+                    // self.account_select_detail.update_self(self.add_account_detail.clone().into());
+                    // self.update_current_account();
                 }
                 Err(_)=>{
                     //todo Add message on screen
@@ -397,6 +396,25 @@ impl App{
         }
     }
 
+    fn check_home_buttons(&mut self){
+        if self.app_state == AppState::SendScreenClick {
+            self.app_state=AppState::None;
+            if self.view != AppView::SendScreen {
+                //hide gas
+                self.blocks.gas.hide();
+            }
+            self.view = AppView::SendScreen;
+        }
+
+        if self.app_state == AppState::BuyBlobScreenClick {
+            self.app_state=AppState::None;
+            if self.view != AppView::BuyBlobScreen {
+                //hide gas
+                self.blocks.gas.hide();
+            }
+            self.view = AppView::BuyBlobScreen;
+        }
+    }
     fn check_splash(&mut self){
         if self.app_state == AppState::SplashReset {
             //create mnemonic
@@ -609,6 +627,7 @@ impl App{
             }
         });
         
+        self.check_home_buttons();
     }
 
     fn send_view(&mut self,ui: &mut egui::Ui, width: f32, height :f32){
@@ -674,7 +693,7 @@ impl App{
         self.send_promise.check_gas_result();
         self.send_promise.consume_tx_result().map(|m| {
             //self.send.update_tx_response(Some(m.to_owned()),None);
-            self.blocks.message.update_tx_response(TxState::Success,"Sucecss!".to_owned());
+            self.blocks.message.update_tx_response(TxState::Success,"Success!".to_owned());
             //get updated after 5 seconds
             std::thread::sleep(tokio::time::Duration::from_millis(5000));
             
@@ -721,19 +740,8 @@ impl App{
                 );
             //}
         });
-
-        self.txn_list_promise.check_result();
-        self.txn_list_promise.consume_result().as_ref().map(|m| {
-            //self.home.update_balances_from_app(m);
-            self.txns=Some(m.clone());
-            self.blocks.txn_list.set_txns(m.clone());
-            
-            
-        });
-        self.txn_list_promise.consume_failure().map(|_|{});
-
-        
         self.buy_blob_promise.consume_gas_result().map(|m| {
+            println!("gas {:?}",m);
             self.tx_gas=Some(m);
             self.blocks.message.update_tx_response(TxState::None,
                 "".to_string());
@@ -745,6 +753,18 @@ impl App{
            self.blocks.message.update_tx_response(TxState::Failure,"Tx failed!".to_string());
         });
 
+        
+        self.txn_list_promise.check_result();
+        self.txn_list_promise.consume_result().as_ref().map(|m| {
+            //self.home.update_balances_from_app(m);
+            self.txns=Some(m.clone());
+            self.blocks.txn_list.set_txns(m.clone());
+            
+            
+        });
+        self.txn_list_promise.consume_failure().map(|_|{});
+
+        
         
         self.balance_promise.check_result();
         self.balance_promise.consume_result().as_ref().map(|m| {
@@ -785,22 +805,58 @@ impl App{
             if self.view == AppView::SendScreen {
                 //use receiver detail
                 //if self.active_account_name.is_some() {
-                    self.send_promise.init_gas(&self.user,
-                        //&self.active_account_name.clone().unwrap(),
-                        &self.account_select_detail.name,
-                        self.send_detail.clone());
+                self.send_promise.init_gas(&self.user,
+                    //&self.active_account_name.clone().unwrap(),
+                    &self.account_select_detail.name,
+                    self.send_detail.clone());
                 //}
             };
             if self.view == AppView::BuyBlobScreen {
                 //use buy blob detail
                 // if self.active_account_name.is_some() {
-                    self.buy_blob_promise.init_gas(&self.user,
-                        //&self.active_account_name.clone().unwrap(),
-                        &self.account_select_detail.name,
-                        self.buy_blob_detail.clone());
-                // }
+                if self.buy_blob_detail.namespace.len()>0 
+                    && self.buy_blob_detail.file_path.len() > 0 {
+                        let bytes=self.buy_blob_detail.namespace.as_bytes();
+                        if bytes.len()>9 {
+                            self.blocks.message.update_tx_response(TxState::Failure,
+                                "Error: Namespace should be less than 9 bytes".to_string());
+                            
+                        }else{
+                            self.blocks.message.clear_state();
+                            match cel_wallet::utils::load_file(self.buy_blob_detail.file_path.clone()){
+                                Ok(data)=>{
+                                    self.buy_blob_detail.data = data;
+                                    
+                                    self.blocks.message.clear_state();
+                                    self.buy_blob_promise.init_gas(&self.user,
+                                        //&self.active_account_name.clone().unwrap(),
+                                        &self.account_select_detail.name,
+                                        self.buy_blob_detail.clone());
+                                },
+                                Err(_)=>{
+                                    self.blocks.message.update_tx_response(TxState::Failure,
+                                        "Error in loading file".to_string());
+                                }
+                            }
+                        };
+                            
+                        
+                    }else{
+                            if self.buy_blob_detail.namespace.len() == 0 { 
+                                self.blocks.message.update_tx_response(TxState::Failure,
+                                    "Set namespace".to_string());
+                            }
+                            else if self.buy_blob_detail.file_path.len() == 0 { 
+                                self.blocks.message.update_tx_response(TxState::Failure,
+                                    "Select file to upload".to_string());
+                            };
+                    };
             };
-        }
+            
+                    
+                // }
+        };
+        
     }
  
 }
