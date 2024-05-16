@@ -14,4 +14,6 @@ Pending features:
 - Light/Dark theme
 - Support rpc 
 
-
+# To run application locally
+cargo build --release
+cargo run

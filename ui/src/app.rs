@@ -789,7 +789,7 @@ impl App{
                 self.fee_coin=fee_coin;
             }
             //Get txns
-            std::thread::sleep(tokio::time::Duration::from_millis(2000));
+            std::thread::sleep(tokio::time::Duration::from_millis(5000));
             self.txn_list_promise.init(&self.user,
                 //&self.active_account_name.clone().unwrap()
                 &self.account_select_detail.name,
