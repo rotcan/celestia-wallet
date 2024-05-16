@@ -18,11 +18,11 @@ impl TxnListPromise{
         }
     }
     //init
-    pub fn init(&mut self, user: &User, account_name: &String){
+    pub fn init(&mut self, user: &User, account_name: &String,sleep_time: u64,){
         let user_clone=user.clone();
         let name=account_name.clone();
         self.promise = Some(poll_promise::Promise::spawn_async(async move {
-            // std::thread::sleep(tokio::time::Duration::from_millis(1000));
+            std::thread::sleep(tokio::time::Duration::from_millis(sleep_time));
             let txns=user_clone.get_account_txns(name).await;
             txns
         }));

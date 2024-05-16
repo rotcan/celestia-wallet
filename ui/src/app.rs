@@ -271,10 +271,10 @@ impl App{
 
     fn update_current_account(&mut self){
         //balances
-        self.balance_promise.init(&self.user,&self.account_select_detail.name);
+        self.balance_promise.init(&self.user,&self.account_select_detail.name,0);
         self.blocks.balance.set_loading();
         //txns
-        self.txn_list_promise.init(&self.user,&self.account_select_detail.name);
+        self.txn_list_promise.init(&self.user,&self.account_select_detail.name,0);
 
         self.blocks.message.clear_state();
         self.blocks.top_panel.set_address_value(self.account_select_detail.name.clone(),
@@ -695,11 +695,12 @@ impl App{
             //self.send.update_tx_response(Some(m.to_owned()),None);
             self.blocks.message.update_tx_response(TxState::Success,"Success!".to_owned());
             //get updated after 5 seconds
-            std::thread::sleep(tokio::time::Duration::from_millis(5000));
+            //std::thread::sleep(tokio::time::Duration::from_millis(5000));
             
             self.balance_promise.init(&self.user,
                 //&self.active_account_name.clone().unwrap()
                 &self.account_select_detail.name,
+                5000
             );
             
         });
@@ -714,11 +715,12 @@ impl App{
             // self.send.update_tx_response(None,Some("Tx failed".to_string()));
             self.blocks.message.update_tx_response(TxState::Failure,"Tx failed!".to_string());
 
-            std::thread::sleep(tokio::time::Duration::from_millis(5000));
+            //std::thread::sleep(tokio::time::Duration::from_millis(5000));
             //self.balance_promise.init(&self.user,self.home.get_active_account_name().clone());
             self.balance_promise.init(&self.user,
                     //&self.active_account_name.clone().unwrap()
                 &self.account_select_detail.name,
+                5000
             );
             
         });
@@ -731,12 +733,13 @@ impl App{
             //self.blob.update_tx_response(Some(m.to_owned()),None);
             self.blocks.message.update_tx_response(TxState::Success,"Success!".to_owned());
             //get updated after 5 seconds
-            std::thread::sleep(tokio::time::Duration::from_millis(5000));
+            //std::thread::sleep(tokio::time::Duration::from_millis(5000));
             //self.balance_promise.init(&self.user,self.home.get_active_account_name().clone());
             //if self.active_account_name.is_some() {
                 self.balance_promise.init(&self.user,
                     //&self.active_account_name.clone().unwrap()
                     &self.account_select_detail.name,
+                    5000
                 );
             //}
         });
@@ -789,10 +792,11 @@ impl App{
                 self.fee_coin=fee_coin;
             }
             //Get txns
-            std::thread::sleep(tokio::time::Duration::from_millis(5000));
+            //std::thread::sleep(tokio::time::Duration::from_millis(5000));
             self.txn_list_promise.init(&self.user,
                 //&self.active_account_name.clone().unwrap()
                 &self.account_select_detail.name,
+                5000
             );
             
         });
