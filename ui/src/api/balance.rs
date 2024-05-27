@@ -89,6 +89,10 @@ impl BalancePromise{
         }
     }
 
+    pub fn is_pending(&self)->bool{
+        self.receiver.is_some()
+    }
+
     // pub fn check_result_old(&mut self, 
     //     // mut success_fn: F1,
     //     // mut failure_fn: F2

@@ -89,8 +89,10 @@ pub struct App{
     user: User,
     app_state: AppState,
     view: AppView,
-    timer: Timer,
     password: String,
+    
+    gas_timer: Timer,
+    balance_timer : Timer,
     
     blocks: AppBlocks,
     
@@ -209,7 +211,8 @@ impl App{
             account_select_detail: AccountData::default(),
             delete_account_detail: DeleteAccountDetail::default(),
             fee_coin: None,
-            timer: Timer::new(1),
+            gas_timer: Timer::new(1,true),
+            balance_timer: Timer::new(10,false),
             add_account_detail: AddAccountDetail::new(),
             mnemonic_detail: AccountMnemonicDetail::new(),
         };
@@ -265,6 +268,7 @@ impl App{
         self.account_select_detail.update(self.user.get_current_account_name(),
         current_account.0.clone(),current_account.1.clone());
         self.update_current_account(); 
+        self.balance_timer.start();
         self.blocks.message.clear_state();
         self.view=AppView::Home;
     }
@@ -635,7 +639,7 @@ impl App{
             //balance
             self.blocks.balance.ui(ui,width,height,&mut self.app_state);
             //buttons 
-            self.blocks.send.ui(ui,width,height,&mut self.send_detail, &mut self.app_state,&mut self.timer);
+            self.blocks.send.ui(ui,width,height,&mut self.send_detail, &mut self.app_state,&mut self.gas_timer);
             //gas
             self.blocks.gas.ui(ui,width,height,&mut self.tx_gas);
         });
@@ -649,7 +653,7 @@ impl App{
             //balance
             self.blocks.balance.ui(ui,width,height,&mut self.app_state);
             //buttons 
-            self.blocks.buy_blob.ui(ctx,ui,width,height,&mut self.buy_blob_detail, &mut self.app_state,&mut self.timer);
+            self.blocks.buy_blob.ui(ctx,ui,width,height,&mut self.buy_blob_detail, &mut self.app_state,&mut self.gas_timer);
             //gas
             self.blocks.gas.ui(ui,width,height,&mut self.tx_gas);
         });
@@ -744,7 +748,7 @@ impl App{
             //}
         });
         self.buy_blob_promise.consume_gas_result().map(|m| {
-            println!("gas {:?}",m);
+            //println!("gas {:?}",m);
             self.tx_gas=Some(m);
             self.blocks.message.update_tx_response(TxState::None,
                 "".to_string());
@@ -760,6 +764,7 @@ impl App{
         self.txn_list_promise.check_result();
         self.txn_list_promise.consume_result().as_ref().map(|m| {
             //self.home.update_balances_from_app(m);
+            //println!("txns count = {}",m.len());
             self.txns=Some(m.clone());
             self.blocks.txn_list.set_txns(m.clone());
             
@@ -767,7 +772,14 @@ impl App{
         });
         self.txn_list_promise.consume_failure().map(|_|{});
 
-        
+        self.balance_timer.update();
+        if self.balance_timer.consume() == true{
+            //println!("balance timer consume true");
+            if &self.account_select_detail.name!= "" && !self.balance_promise.is_pending() {
+                self.balance_promise.init(&self.user,&self.account_select_detail.name,0);
+            }
+
+        };
         
         self.balance_promise.check_result();
         self.balance_promise.consume_result().as_ref().map(|m| {
@@ -802,8 +814,8 @@ impl App{
         });
         self.balance_promise.consume_failure().map(|_|{});
 
-        self.timer.update();
-        if self.timer.consume() == true {
+        self.gas_timer.update();
+        if self.gas_timer.consume() == true {
             
             //get gas 
             if self.view == AppView::SendScreen {

@@ -9,10 +9,10 @@ pub struct Timer{
 }
 
 impl Timer{
-    pub fn new(seconds: u64)->Self{
+    pub fn new(seconds: u64, once: bool)->Self{
         Timer{
             active: false,
-            once: true,
+            once,
             limit: Duration::new(seconds, 0),
             current_time: Instant::now(),
             is_finish: false,
