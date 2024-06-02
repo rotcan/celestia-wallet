@@ -2,7 +2,7 @@
 resolver = "2"
 members=[
     "rust-keyring", "query-client", "wallet", 
-    "ui",
+    "ui", "node",
 ]
 
 [workspace.package]
